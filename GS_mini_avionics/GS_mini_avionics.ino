@@ -6,20 +6,17 @@
 #include <WiFi.h>
 #include "SPIFFS.h"
 
-/* GLOBALS */
-/* WiFi */
 const char* ssid = "MiniAvionics";
-const char* wpa = "Aeiou12345?";
-const char* serverAddress = "http://192.168.4.1"
+// const char* wpa = "123456555";
+const char* serverAddress = "http://192.168.4.1";
 
 WiFiServer server(80);
 
-/* SETUP */
 void setup(){
   Serial.begin(115200);
 
   // Set up the access point
-  WiFi.softAP(ssid, wpa);
+  WiFi.softAP(ssid);
 
   // Start the server
   server.begin();
@@ -29,12 +26,13 @@ void setup(){
   // Check if the log file exists in the SPIFFS
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occured while mounting");
+  } else {
+    Serial.println("SPIFFS mounted successfuly");
   }
   
   Serial.println(SPIFFS.exists("/4_21_2082_refactored.txt"));
 }
 
-/* LOOP */
 void loop(){
 //   Check if a client has connected
   WiFiClient client = server.available();
@@ -42,12 +40,12 @@ void loop(){
     Serial.println("New client connected");
 
     // Open the file for reading
-    File file = SPIFFS.open("/4_21_2082_refactored.txt");
+    File file = SPIFFS.open("/4_21_2082_refactored.txt"); // file path for the SPIFF doesn't include same structure as computer file path
 
     if (file) {
       //Read and print the content of the file
       while (file.available()) {
-        Serial.write(file.read());
+        Serial.print(char(file.read()));
       }
 
       file.close();
@@ -59,5 +57,7 @@ void loop(){
     
     client.stop();
     Serial.println("Client disconnected");
+  } else {
+    Serial.println("There is no client found.");
   }
 }
