@@ -10,7 +10,7 @@
 /* WiFi */
 const char* ssid = "MiniAvionics";
 const char* wpa = "Aeiou12345?";
-const char* serverAddress = "http://192.168.4.1:
+const char* serverAddress = "http://192.168.4.1"
 
 WiFiServer server(80);
 
