@@ -91,8 +91,8 @@ app.layout = html.Div([
 def update_alt(n):
     x = np.linspace(0, n/10, 1000)
     y = (-0.5*(x-14)**2)+100 # placeholder value
-    if np.any(y < 0):
-        raise PreventUpdate
+    if np.any(y < 0): # this just says - if any of the y elements are less than zero, don't update the callback output
+        raise PreventUpdate # 
     else:
         data = [go.Scatter(x=x, y=y, mode='lines')]
         layout = go.Layout(
