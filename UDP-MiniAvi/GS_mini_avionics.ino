@@ -51,18 +51,16 @@ void loop() {
       Serial.println("Start command received. Sending file.");
       sendFileOverUDP();
     } else {
-      Serial.println("Failed to open file for reading");
+      Serial.println("Failed to open file for reading"); // print this line every time you don't get "start" string from the client side
     }
   }
 }
 
 void sendFileOverUDP() {
-  Serial.println("We are working.");
   File file = SPIFFS.open("/4_21_2082_refactored.txt");
   char fileBuffer[128];
   while (file.available()) {
-    String fileString = file.readStringUntil('\n');
-    Serial.println("Here in the code. 2");
+    String fileString = file.readStringUntil('\n'); 
     udp.beginPacket("192.168.4.2", 4210);  // prepares to start sending data over UDP
     const char* buffer = fileString.c_str();
     udp.write((const uint8_t*)fileString.c_str(), fileString.length()); // change from length() to strlen() so we get the length in valid format
