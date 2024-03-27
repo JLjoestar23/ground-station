@@ -10,56 +10,28 @@ import plotly.graph_objs as go
 
 app = dash.Dash(__name__) # initialize the Dash app
 
-theme = {
-    'dark': True,
-    'detail': '#007439',
-    'primary': '#00EA64',
-    'secondary': '#6E6E6E',
-}
+# general variables
+plot_height = 400
+plot_width = 550
 
-'''
-# function to customize plot characteristics
-def update_plot_layout(plot, xaxis_title, yaxis_title, title_text):
-    plot.update_layout(
-        xaxis_title=xaxis_title,
-        yaxis_title=yaxis_title,
-        title={
-            'text': title_text,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': {'size': 24}
-        }
-    )
-'''
-
-'''
-# Define plots
-alt_plot = px.line(df, x='x', y='y', title='Altitude Plot', height=450, width=600)
-velocity_plot = px.line(df, x='x', y='y', title='Velocity Plot', height=450, width=600)
-temp_plot = px.line(df, x='x', y='y', title='Temperature Plot', height=450, width=600)
-lin_accel_plot = px.line(df, x='x', y='y', title='Linear Acceleration', height=450, width=600)
-ang_accel_plot = px.line(df, x='x', y='y', title='Angular Acceleration', height=450, width=600)
-orientation_plot = px.line(df, x='x', y='y', title='Orientation', height=450, width=600)
-
-# Update plot layout using the defined function
-update_plot_layout(alt_plot, "Time (s)", "Altitude (ft)", "Altitude Plot")
-update_plot_layout(velocity_plot, "Time (s)", "Velocity (m/s)", "Velocity Plot")
-update_plot_layout(temp_plot, "Time (s)", "Temperature (C)", "Temperature Plot")
-update_plot_layout(lin_accel_plot, "Time (s)", "Linear Acceleration (m/s^2)", "Linear Acceleration Plot")
-update_plot_layout(ang_accel_plot, "Time (s)", "Angular Acceleration (m/s^2)", "Angular Acceleration Plot")
-update_plot_layout(orientation_plot, "Time (s)", "Orientation", "Angular Acceleration Plot")
-'''
 
 # basically doing HTML bullshit in Python
 app.layout = html.Div(children=[
     html.Div([
+
+        # Allows tracking of time
         dcc.Interval(
             id='interval',
             interval=100,
             n_intervals=0,
         ),
-        html.H1('Main Telemetry Display', style={'textAlign': 'center', 'fontFamily': 'Arial', "color": "#FFFFFF"}),
+
+        # Div for header and top functions
+        html.Div([
+            html.H1('Main Telemetry Display', style={'textAlign': 'center', 'fontFamily': 'Arial', "color": "#FFFFFF", 'display': 'flex', 'justifyContent': 'center', 'alignContent': 'center'}),
+            ], style={'width': '25vw', 'height': '10vh', 'top': '0vh', 'left': '50vw', 'border': '5px solid white', 'display': 'flex', 'justifyContent': 'center', 'alignContent': 'center'}),
+        
+        # Div for 1st row of graphs
         html.Div([
             dcc.Graph(
                 id='Altitude-Plot',
@@ -75,6 +47,7 @@ app.layout = html.Div(children=[
             )
         ], style={'display': 'flex', 'justifyContent': 'center', 'paddingBottom': '5px'}),
 
+        # Div for 2nd row of graphs
         html.Div([
             dcc.Graph(
                 id='LinearAccel-Plot',
@@ -91,11 +64,12 @@ app.layout = html.Div(children=[
         ], style={'display': 'flex', 'justifyContent': 'center'})
     ]),
 ], style={
+    'position': 'fixed',
+    'top': 0,
+    'left': 0,
+    'width': '100vw',
+    'height': '100vh',
     'backgroundColor': '#303030',
-    'border': 'solid 5px #303030',
-    'border-radius': '5px',
-    'padding': '50px',
-    'marginTop': '20px'
 })
 
 
@@ -115,8 +89,8 @@ def update_alt(n):
             title='Altitude-Plot', 
             xaxis=dict(title='Time'), 
             yaxis=dict(title='Altitude'),
-            height=500,
-            width=650,
+            height=plot_height,
+            width=plot_width,
             plot_bgcolor='#303030',
             paper_bgcolor='#303030',
             font=dict(color='#FFFFFF')
@@ -138,8 +112,8 @@ def update_vel(n):
             title='Velocity-Plot', 
             xaxis=dict(title='Time'), 
             yaxis=dict(title='Velocity'),
-            height=500,
-            width=650,
+            height=plot_height,
+            width=plot_width,
             plot_bgcolor='#303030',
             paper_bgcolor='#303030',
             font=dict(color='#FFFFFF')
@@ -161,8 +135,8 @@ def update_temp(n):
             title='Temperature-Plot', 
             xaxis=dict(title='Time'), 
             yaxis=dict(title='Temperature'),
-            height=500,
-            width=650,
+            height=plot_height,
+            width=plot_width,
             plot_bgcolor='#303030',
             paper_bgcolor='#303030',
             font=dict(color='#FFFFFF')
@@ -184,8 +158,8 @@ def update_lin_accel(n):
             title='LinearAccel-Plot', 
             xaxis=dict(title='Time'), 
             yaxis=dict(title='Acceleration'),
-            height=500,
-            width=650,
+            height=plot_height,
+            width=plot_width,
             plot_bgcolor='#303030',
             paper_bgcolor='#303030',
             font=dict(color='#FFFFFF')
@@ -207,8 +181,8 @@ def update_ang_accel(n):
             title='AngularAccel-Plot', 
             xaxis=dict(title='Time'), 
             yaxis=dict(title='Acceleration'),
-            height=500,
-            width=650,
+            height=plot_height,
+            width=plot_width,
             plot_bgcolor='#303030',
             paper_bgcolor='#303030',
             font=dict(color='#FFFFFF')
@@ -230,8 +204,8 @@ def update_orientation(n):
             title='Orientation-Plot', 
             xaxis=dict(title='Time'), 
             yaxis=dict(title='Orientation'),
-            height=500,
-            width=650,
+            height=plot_height,
+            width=plot_width,
             plot_bgcolor='#303030',
             paper_bgcolor='#303030',
             font=dict(color='#FFFFFF')
