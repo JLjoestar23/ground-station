@@ -6,8 +6,7 @@ import numpy as np
 from dash.exceptions import PreventUpdate
 import plotly.graph_objs as go
 
-
-app = dash.Dash(__name__) # initialize the Dash app
+app = dash.Dash(__name__)
 
 '''
 # function to customize plot characteristics
@@ -94,7 +93,7 @@ def update_alt(n):
     if np.any(y < 0): # this just says - if any of the y elements are less than zero, don't update the callback output
         raise PreventUpdate # 
     else:
-        data = [go.Scatter(x=x, y=y, mode='lines')]
+        data = [go.Scatter(x=x, y=y, mode='lines')] # construct a scatter object (scatter plot with the information in layout)
         layout = go.Layout(
             title='Altitude-Plot', 
             xaxis=dict(title='Time'), 
