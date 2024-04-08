@@ -1,6 +1,6 @@
 import dash
 from dash import Dash, dcc, html, Input, Output, callback, State
-import dash_daq as daq
+#import dash_daq as daq
 import plotly.express as px
 import pandas as pd
 import numpy as np
@@ -104,8 +104,8 @@ def update_alt(n):
     y = (-0.5*(x-14)**2)+100 # placeholder value
     if not record_data:
         raise dash.exceptions.PreventUpdate
-    else:
-        data = [go.Scatter(x=x, y=y, mode='lines', line=dict(color='#FF10F0'))]
+    #else if:
+        #data = [go.Scatter(x=x, y=y, mode='lines', line=dict(color='#FF10F0'))]
     else:
         data = [go.Scatter(x=x, y=y, mode='lines')] # construct a scatter object (scatter plot with the information in layout)
         layout = go.Layout(
