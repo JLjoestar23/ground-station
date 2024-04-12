@@ -52,16 +52,17 @@ void sendArrOverUDP(char message[][6]) {
     }
   udp.beginPacket(serverAddress, localUdpPort);
   udp.write((const uint8_t*)serializedMessage, offset);
-  udp.endPacket();
+  udp.endPacket(); // Returns 1 if the packet is sent successfully, 0 if otherwise (https://www.arduino.cc/reference/en/libraries/wifi/wifiudp.endpacket/)
+  if (udp.endPacket() == 1) {
+    Serial.println("Sent successfully...");
+  } else {
+    Serial.println("Sent unsuccessfully...");
+  }
 }
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     sendArrOverUDP(message);
-    // Print everything on a newline for debugging purposes
-    for (int i = 0; i < 28; i++) {
-      Serial.println(message[i]);
-    }
     delay(1000);
   }
 }
