@@ -6,8 +6,14 @@ import pandas as pd
 import numpy as np
 from dash.exceptions import PreventUpdate
 import plotly.graph_objs as go
+import sys
+sys.path.append("C:/Users/jliu3/OneDrive - Olin College of Engineering/Documents/GitHub/ground-station/UDP-MiniAvi")
+import deserialize
 
 app = dash.Dash(__name__)
+
+dh = deserialize.DataHandler()
+#raw_data = dh.socket_to_receive_data()
 
 # general variables
 plot_height = 400
@@ -80,6 +86,10 @@ app.layout = html.Div(children=[
 )
 
 # callbacks for various functions
+# @app.callback(
+        
+# )
+
 @app.callback(
     Output('record_data_toggle', 'children'),
     Input('record_data_toggle', 'n_clicks'),
