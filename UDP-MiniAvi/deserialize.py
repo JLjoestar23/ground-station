@@ -6,17 +6,23 @@ class DataHandler:
     def __init__(self):
         self.data = None
         self.buffer = [] # Initialize a buffer so that self.data doesn't get overwritten when updating. This accumulates data packets
-    
+        self.HOST = '0.0.0.0'
+        self.PORT = 4210
+
     def socket_to_receive_data(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            HOST = '0.0.0.0'
-            PORT = 4210
-            s.bind((HOST, PORT))
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow the socket to reuse the address
+            s.bind((self.HOST, self.PORT))
+            s.settimeout(30)
             while True: # while the connection is ongoing
-                self.data, _ = s.recvfrom(1024) # _ = addr which we don't care about
-                if not self.data: break ### THIS IS A SCAFFHOLD - WHAT IS PROPER EXIT CONDITION?
-                self.buffer.append(self.data)
-    
+                try: 
+                    self.data, addr = s.recvfrom(1024) # _ = addr which we don't care about
+                    print(self.data, addr)
+                    if not self.data: print('There is no data coming through') ### THIS IS A SCAFFHOLD - WHAT IS PROPER EXIT CONDITION?
+                    self.buffer.append(self.data)
+                except socket.timeout:
+                    print('Timeout: No data received in last 10 seconds.')
+
     def process_data(self):
         with open('logfile.txt', 'ab') as file:
             for data_packet in self.buffer: # Need to ensure that we're
@@ -46,8 +52,13 @@ class DataHandler:
             converted_values.append(float(item))
         return converted_values
 
-### CODE THAT WOULD INSTANTIATE CLASS SO WE CAN PASS LIST OF VALUES TO THE float_to_dict() function
-    
+# Instantiate class
+handler = DataHandler()
+handler.socket_to_receive_data() # this function has no "return" value so no need to assign it to a variable
+handler.process_data() # this function has no "return" value so no need to assign it to a variable
+begin_split = handler.split_data_list()
+float_conversion = handler.convert_to_float(begin_split) # pass the list from above
+
 # creating a separate function for dictionary because it's dependent on the class being called
 def float_to_dict(float_list):
     # This function contains the dictionary of array values from the ESP32 which will get passed into visualuzation
@@ -68,19 +79,23 @@ def float_to_dict(float_list):
         'Longitude' : float_list[12],
         'Latitude' : float_list[13],
         'GPS Altitude' : float_list[14],
-        '' : float_list[15], # confirm phs
-        '' : float_list[16],
+        'Flight Phase' : float_list[15], 
+        'Continuity' : float_list[16],
         'Voltage' : float_list[17],
         'Link' : float_list[18],
         'Kalman Filter X' : float_list[19],
         'Kalman Filter Y' : float_list[20],
         'Kalman Filter Z' : float_list[21],
-        'Kalman Filter Vx' : float_list[22], # confirm
-        'Kalman Filter Vy' : float_list[23], # confirm
-        'Kalman Filter Vz' : float_list[24], # confirm
+        'Kalman Filter Vx' : float_list[22],
+        'Kalman Filter Vy' : float_list[23], 
+        'Kalman Filter Vz' : float_list[24], 
         'Kalman Filter Draf' : float_list[25],
         '' : float_list[26], # confirm
         'Diag Msg' : float_list[27], # confirm
     }
 
     return dictviz
+
+# Call the float_to_dict function
+floatdict = float_to_dict(float_conversion)
+print(floatdict)
