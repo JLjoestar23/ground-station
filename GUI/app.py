@@ -13,7 +13,7 @@ import deserialize
 app = dash.Dash(__name__)
 
 dh = deserialize.DataHandler()
-#raw_data = dh.socket_to_receive_data()
+
 
 # general variables
 plot_height = 400
@@ -24,6 +24,7 @@ recording_status = 'Begin Recording'
 connect_toggle = 'Connect'
 connect_status_text = 'Disconnected'
 connect_status = False
+send_dict = {}
 
 # basically doing HTML bullshit in Python
 app.layout = html.Div(children=[
@@ -44,6 +45,10 @@ app.layout = html.Div(children=[
             html.Button(connect_toggle, id='connect_toggle'),
             html.H3(connect_status_text, style={'textAlign': 'center', 'fontFamily': 'Arial', "color": '#FFFFFF', 'margin': 'auto'}),
         ], style={'width': '5vw', 'height': '2.5vw', 'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center', 'margin': 'auto'}),
+
+        html.Div([
+            html.H3(send_dict, id='main_telemtry')
+        ]),
         
     # Div for 1st row of graphs
     html.Div([
@@ -86,9 +91,35 @@ app.layout = html.Div(children=[
 )
 
 # callbacks for various functions
-# @app.callback(
-        
-# )
+@app.callback(
+    Output('main_telemetry', 'children'),
+    Input('interval', 'n_intervals')
+)
+def udpate_values(n):
+    proc_data = dh.process_data()
+    split = dh.split_data_list()
+    converted = dh.convert_to_float(split)
+    values = dh.convert_to_dict(converted)
+    
+    accel_x = values["Acceleration X Direction"]
+    accel_y = values["Acceleration Y Direction"]
+    accel_z = values["Acceleration Z Direction"]
+    gyro_x = values["Gyroscope X Direction"]
+    gyro_y = values["Gyroscope Y Direction"]
+    gyro_z = values["Gyroscope Z Direction"]
+    temp = values["Temperature"]
+    alt = values["Barometric Altitude"]
+
+    send_dict = {"X Acceleration": accel_x, 
+                 "Y acceleration": accel_y, 
+                 "Z Acceleration": accel_z, 
+                 "X Orientation": gyro_x, 
+                 "Y Orientation": gyro_y, 
+                 "Z Orientation": gyro_z, 
+                 "Temperature": temp, 
+                 "Altitude:": alt}
+
+    return send_dict
 
 @app.callback(
     Output('record_data_toggle', 'children'),
@@ -165,8 +196,9 @@ def update_alt(n):
     
 @app.callback(
     Output('Velocity-Plot', 'figure'),
-    Input('interval', 'n_intervals')
+    Input('interval', 'n_intervals'),
 )
+
 def update_vel(n):
     x = np.linspace(0, n/10, 1000)
     y = -x+14 # palceholder value
