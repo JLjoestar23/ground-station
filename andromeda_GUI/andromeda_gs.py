@@ -8,7 +8,6 @@ import matplotlib as mpl
 from PyQt6 import QtCore, QtWidgets, QtGui
 from gsmw import Ui_MainWindow
 import pyqtgraph as pg
-import deserialize
 
 #testing 
 
@@ -22,9 +21,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        # initializing DataHandler class from deserialize.py
-        self.handler = deserialize.DataHandler()
 
         # setting up variables
         self.connect = 0
@@ -194,9 +190,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ui.autosave_toggle.clicked.connect(self.toggle_autosave)
 
     # button functions
+
     def connect_to_server(self):
         if self.connect == 0:
-            self.status = self.handler.establish_connection()
+            # self.status = self.handler.establish_connection() <- outdated
             if (
                 self.status == "Connected"
                 or self.status == "Connected (no initial data)"
@@ -207,7 +204,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 self.ui.log_entry.appendPlainText(self.status)
         elif self.connect == 1:
-            self.status = self.handler.disconnect()
+            # self.status = self.handler.disconnect() <- outdated
             if self.status == "Disconnected":
                 self.connect = 0
                 self.ui.log_entry.appendPlainText(self.status)
@@ -249,10 +246,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Receives data packet and formats it into a dictionary where the values
         can be displayed in the GUI each update tick.
         """
-        self.handler.receive_data()
-        self.output = self.handler.split_data_list()
-        self.converted = self.handler.convert_to_float(self.output)
-        self.data_dict = deserialize.float_to_dict(self.converted)
+        # All outdated below
+        # self.handler.receive_data()
+        # self.output = self.handler.split_data_list()
+        # self.converted = self.handler.convert_to_float(self.output)
+        # self.data_dict = deserialize.float_to_dict(self.converted)
 
     def updated_display(self):
         """
