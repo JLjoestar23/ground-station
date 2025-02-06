@@ -8,6 +8,7 @@ import matplotlib as mpl
 from PyQt6 import QtCore, QtWidgets, QtGui
 from gsmw import Ui_MainWindow
 import pyqtgraph as pg
+import client
 
 #testing 
 
@@ -193,6 +194,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def connect_to_server(self):
         if self.connect == 0:
+            self.status = client.connect_websocket()
             # self.status = self.handler.establish_connection() <- outdated
             if (
                 self.status == "Connected"

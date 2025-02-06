@@ -10,15 +10,11 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 // Example radio data (this would be dynamically updated in a real scenario)
-float frequency = 101.1;
-String modulation = "FM";
-int signalStrength = 85;
+int msg_number = 0;
 
 // Function to send radio data to all connected WebSocket clients
 void notifyClients() {
-  String jsonData = String("{\"frequency\":") + frequency +
-                    ", \"modulation\":\"" + modulation +
-                    "\", \"signalStrength\":" + signalStrength + "}";
+  String jsonData = String("{\"Message Number\":") + msg_number + "}";
   ws.textAll(jsonData);
 }
 
@@ -34,7 +30,9 @@ void onWebSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
 
 void setup() {
   // Start Serial Monitor
-  Serial.begin(115200); delay(250);
+  Serial.begin(115200);
+   
+  delay(250);
 
   // Connect to Wi-Fi
   WiFi.mode(WIFI_AP);
@@ -56,11 +54,10 @@ void setup() {
 }
 
 void loop() {
+  delay(25);
   // Simulate radio data updates
-  delay(5000); // Simulate new data every 5 seconds
-  Serial.println("HELLO");
-  frequency += 0.1; // Example data update
-  signalStrength = (signalStrength + 5) % 100;
+  Serial.println(msg_number);
+  msg_number += 1;
 
   // Notify WebSocket clients with the updated data
   notifyClients();
