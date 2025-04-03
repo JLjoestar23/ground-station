@@ -9,8 +9,7 @@ from PyQt6 import QtCore, QtWidgets, QtGui
 from gsmw import Ui_MainWindow
 import pyqtgraph as pg
 import client
-
-#testing 
+import random
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """
@@ -45,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pg.setConfigOptions(antialias=True)
 
         # setting up plots
-        plot_LUT = {
+        plot_list = {
             "bar_alt": ["Plot1", "m"],
             "kf_alt": ["Plot1", "g"],
             "trigger_alt": ["Plot1", "b"],
@@ -77,10 +76,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ui.Plot6.addLegend()
         self.ui.Plot6.setTitle("Orientation", color=[85, 170, 255], size="12pt")
 
-        for i in range(len(plot_LUT)):
-            data_series = list(plot_LUT.keys())[i]
-            plot_widget = plot_LUT[data_series][0]
-            series_color = pg.mkPen(color=plot_LUT[data_series][1], width=5)
+        for i in range(len(plot_list)):
+            data_series = list(plot_list.keys())[i]
+            plot_widget = plot_list[data_series][0]
+            series_color = pg.mkPen(color=plot_list[data_series][1], width=5)
 
             setattr(
                 self.ui,
@@ -187,8 +186,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # once button is clicked...
         self.ui.connect_toggle.clicked.connect(self.connect_to_server)
         self.ui.mission_start_toggle.clicked.connect(self.toggle_record_data)
-
         self.ui.autosave_toggle.clicked.connect(self.toggle_autosave)
+        self.ui.save_data.clicked.connect(self.save_recorded_data)
+        self.ui.clear_data.clicked.connect(self.clear_recorded_data)
+
+        # setting up the status timer for updating plots and data
+        self.status_timer = QtCore.QTimer()
+        self.status_timer.timeout.connect(self.update_plots)
+        self.status_timer.start(100) # Update every 100 ms (10 Hz)
 
     # button functions
 
@@ -254,7 +259,44 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.converted = self.handler.convert_to_float(self.output)
         # self.data_dict = deserialize.float_to_dict(self.converted)
 
-    def updated_display(self):
+    def update_plots(self):
+        """
+        Update the plots with the latest data
+        """
+
+        new_data = {
+            "bar_alt": client.data,
+            #"kf_alt": random.uniform(0, 100),
+            #"trigger_alt": random.uniform(0, 100),
+            #"kf_vel": random.uniform(0, 50),
+            #"Int_vel": random.uniform(0, 50),
+            #"trigger_vel": random.uniform(0, 50),
+            #"x_accel": random.uniform(-10, 10),
+            #"y_accel": random.uniform(-10, 10),
+            #"z_accel": random.uniform(-10, 10),
+            #"x_gyr": random.uniform(-5, 5),
+            #"y_gyr": random.uniform(-5, 5),
+            #"z_gyr": random.uniform(-5, 5),
+            #"x_ang": random.uniform(-180, 180),
+            #"y_ang": random.uniform(-180, 180),
+            #"z_ang": random.uniform(-180, 180),
+            #"temp": random.uniform(-20, 100), 
+
+        }
+
+        # Update each plot with the new data
+        for data_series, value in new_data.items():
+            plot_item = getattr(self.ui, data_series, None)
+            if plot_item:
+                # Append new data to the plot
+                x_data, y_data = plot_item.getData()
+                if x_data is None or y_data is None:
+                    x_data, y_data = [], []
+                x_data = list(x_data) + [time.time()]  # Use time as x-axis
+                y_data = list(y_data) + [value]
+                plot_item.setData(x=x_data[-100:], y=y_data[-100:])  # Keep last 100 points
+
+    def updat_display(self):
         """
         Updates every element of the GUI.
         """
