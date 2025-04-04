@@ -2,7 +2,7 @@
 #include <ESPAsyncWebServer.h>
 
 // Replace with your network credentials
-const char* ssid = "WS_test";
+const char* ssid = "WS_server_test";
 
 // Create an AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -14,7 +14,7 @@ int msg_number = 0;
 
 // Function to send radio data to all connected WebSocket clients
 void notifyClients() {
-  String jsonData = String("{\"Message Number\":") + msg_number + "}";
+  String jsonData = String("{\"Message Number\":") + random() + "}";
   ws.textAll(jsonData);
 }
 
@@ -54,7 +54,7 @@ void setup() {
 }
 
 void loop() {
-  delay(25);
+  delay(100);
   // Simulate radio data updates
   Serial.println(msg_number);
   msg_number += 1;

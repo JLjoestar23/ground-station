@@ -1,12 +1,16 @@
 import requests
 import websocket
 import json
+import threading
 
 class DataHandler:
     def __init__(self):
-        self.ESP32_IP = "192.168.4.1" # IP Address
+        self.ESP32_IP = "192.168.4.1"  # IP Address
         self.ws_url = f"ws://{self.ESP32_IP}/ws"
-        self.ws = websocket.WebSocketApp(self.ws_url, on_message = self.on_message, on_error = self.on_error, on_close = self.on_close)
+        self.ws = None
+        self.data = None  # Store the latest data received
+        self.running = False  # Control the WebSocket thread
+        self.thread = None  # Thread for WebSocket communication
 
     def get_radio_data(self):
         """
@@ -24,22 +28,45 @@ class DataHandler:
 
     def connect_websocket(self):
         """
-        Connect to the ESP32 WebSocket for real-time data.
+        Start the WebSocket connection in a separate thread.
         """
-        self.ws.run_forever()
+        if not self.running:
+            self.running = True
+            self.thread = threading.Thread(target=self._run_websocket, daemon=True)
+            self.thread.start()
+            print("WebSocket thread started.")
 
     def disconnect_websocket(self):
+        """
+        Stop the WebSocket connection and thread.
+        """
+        self.running = False
         if self.ws:
-            print("Disconnecting Websocket")
+            print("Disconnecting WebSocket...")
             self.ws.close()
+        if self.thread:
+            self.thread.join()
+            print("WebSocket thread stopped.")
+
+    def _run_websocket(self):
+        """
+        Internal method to run the WebSocket connection.
+        """
+        self.ws = websocket.WebSocketApp(
+            self.ws_url,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close,
+        )
+        self.ws.run_forever()
 
     def on_message(self, ws, message):
         """
         Handle incoming WebSocket messages.
         """
         try:
-            data = json.loads(message)
-            print("Real-time Data:", data)
+            self.data = json.loads(message)  # Update the latest data
+            #print(self.data)  # Debugging: Print the received data
         except json.JSONDecodeError:
             print("Invalid message received:", message)
 
@@ -55,7 +82,15 @@ class DataHandler:
         """
         print("WebSocket Closed")
 
+    def get_data(self):
+        """
+        Return the latest data received from the WebSocket.
+        """
+        return self.data
+
+
 if __name__ == "__main__":
-    data = DataHandler()
-    print("\nConnecting to WebSocket for real-time updates...")
-    data.connect_websocket()
+    # Example usage
+    data_handler = DataHandler()
+    data_handler.connect_websocket()
+    print(data_handler.get_data())

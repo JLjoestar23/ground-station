@@ -32,11 +32,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.output = None
         self.converted = None
         self.data_dict = {}
+        self.data_point = 0
+
+        self.data_handler = client.DataHandler()
 
         # setting icon
         self.icon_path = os.path.join(
             os.path.dirname(__file__), "images", "meatball.png"
         )
+
         self.setWindowIcon(QtGui.QIcon("telepy.png"))
 
         # setting window name
@@ -199,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def connect_to_server(self):
         if self.connect == 0:
-            self.status = client.connect_websocket()
+            self.status = self.data_handler.connect_websocket()
             # self.status = self.handler.establish_connection() <- outdated
             if (
                 self.status == "Connected"
@@ -264,25 +268,34 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Update the plots with the latest data
         """
 
+        if type(self.data_handler.get_data()) == dict:
+            self.new_dict = self.data_handler.get_data()
+            self.data_point = self.new_dict["Message Number"]
+            #self.ui.log_entry.appendPlainText(str(self.data_point))
+            print(self.data_point)
+
         new_data = {
-            "bar_alt": client.data,
-            #"kf_alt": random.uniform(0, 100),
-            #"trigger_alt": random.uniform(0, 100),
-            #"kf_vel": random.uniform(0, 50),
-            #"Int_vel": random.uniform(0, 50),
-            #"trigger_vel": random.uniform(0, 50),
-            #"x_accel": random.uniform(-10, 10),
-            #"y_accel": random.uniform(-10, 10),
-            #"z_accel": random.uniform(-10, 10),
-            #"x_gyr": random.uniform(-5, 5),
-            #"y_gyr": random.uniform(-5, 5),
-            #"z_gyr": random.uniform(-5, 5),
-            #"x_ang": random.uniform(-180, 180),
-            #"y_ang": random.uniform(-180, 180),
-            #"z_ang": random.uniform(-180, 180),
-            #"temp": random.uniform(-20, 100), 
+            "bar_alt": self.data_point,
+            "kf_alt": self.data_point,
+            "trigger_alt": self.data_point,
+            "kf_vel": self.data_point,
+            "Int_vel": self.data_point,
+            "trigger_vel": self.data_point,
+            "x_accel": self.data_point,
+            "y_accel": self.data_point,
+            "z_accel": self.data_point,
+            "x_gyr": self.data_point,
+            "y_gyr": self.data_point,
+            "z_gyr": self.data_point,
+            "x_ang": self.data_point,
+            "y_ang": self.data_point,
+            "z_ang": self.data_point,
+            "temp": self.data_point, 
 
         }
+
+        # Maximum number of points to keep in the plot
+        max_points = 50
 
         # Update each plot with the new data
         for data_series, value in new_data.items():
@@ -294,7 +307,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     x_data, y_data = [], []
                 x_data = list(x_data) + [time.time()]  # Use time as x-axis
                 y_data = list(y_data) + [value]
-                plot_item.setData(x=x_data[-100:], y=y_data[-100:])  # Keep last 100 points
+
+                # Keep only the last `max_points` points
+                x_data = x_data[-max_points:]
+                y_data = y_data[-max_points:]
+
+                # Update the plot with the trimmed data
+                plot_item.setData(x=x_data, y=y_data)
 
     def updat_display(self):
         """
