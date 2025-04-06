@@ -18,7 +18,7 @@
 class Radio {
   private:
     RH_RF69 rf69;
-    const static int packetSize = 28;
+    const static int packetSize = 112;
     // float packet[packetSize];
     char packet[packetSize];
     // char encodedPacket[packetSize*4];
@@ -45,10 +45,11 @@ class Radio {
     // void led_test(Led *statusLed);
  
     void sendRadio(char *packet);
-    //void sendRadio();
-    char* readRadio();
+    bool readRadio(char* outBuffer, size_t bufferSize);
+   // char* readRadio();
     //void decodeData();  
     void printData();
+    int getRSSI();
     // void sendingPacket();
     // char readSerial();
 

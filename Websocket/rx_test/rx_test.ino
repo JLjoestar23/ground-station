@@ -8,6 +8,7 @@
 LedController<1,1> lc;
 
 Radio radio;
+char radioPacket[112];
 
 const char* ssid = "WS_test";
 
@@ -48,11 +49,11 @@ void onWebSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
 }
 
 void displayFloat(float value, unsigned int row = 0, unsigned int decimalPlaces = 1,unsigned int digitOffset = 0){
-  unsigned int total_length = NUMBER_OF_DIGITS;
-  if(NUMBER_OF_DIGITS<decimalPlaces){return;};
+  unsigned int total_length = 4;
+  if(4<decimalPlaces){return;};
 
   if(value < 0){
-    control.setChar(row,total_length-1+digitOffset,'-',false);
+    lc.setChar(row,total_length-1+digitOffset,'-',false);
     total_length--;
   };
 
@@ -63,7 +64,7 @@ void displayFloat(float value, unsigned int row = 0, unsigned int decimalPlaces 
   unsigned int v = (unsigned int) (value < 0 ? -value : value);
 
   for (unsigned int i = 0; i < total_length;i++){
-    control.setDigit(row,i+digitOffset,v%10,i == decimalPlaces);
+    lc.setDigit(row,i+digitOffset,v%10,i == decimalPlaces);
     v/=10;
   }
 
@@ -96,20 +97,17 @@ void setup() {
 }
 
 void loop() {
-  char* receivedPacket = radio.readRadio(); // Call function to get received data
-  
-  if (receivedPacket) { // Check if a packet was received
-      Serial.print("Processed Packet: ");
-      Serial.println(receivedPacket);
-
-      message = receivedPacket;
+  if (radio.readRadio(radioPacket, sizeof(radioPacket))) {
+      Serial.print("Final received data: ");
+      Serial.println(radioPacket);
+      message = radioPacket;
       // Notify WebSocket clients with the updated data
       notifyClients();
-
-      // Free the dynamically allocated memory
-      delete[] receivedPacket;
+      int RSSI = radio.getRSSI();
+      Serial.print("RSSI: ");
+      Serial.println(RSSI);
+      displayFloat(RSSI);
   }
-  
-    
-  delay(1000); // Just a delay to simulate periodic checking
+
+  //delay(1000); // Just a delay to simulate periodic checking
 }

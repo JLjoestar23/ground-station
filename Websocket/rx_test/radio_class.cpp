@@ -181,43 +181,64 @@ void Radio::sendRadio(char *packet){
 //    Serial.println("Packet Sent");
 }
 
-char* Radio::readRadio() {
+bool Radio::readRadio(char* outBuffer, size_t bufferSize) {
     if (rf69.available()) {
-        // Should be a message for us now
         uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
         uint8_t len = sizeof(buf);
+        
         if (rf69.recv(buf, &len)) {
-            if (!len) return nullptr;
-            
-            buf[len] = 0; // Null-terminate the buffer
+            if (len >= bufferSize) len = bufferSize - 1;  // Prevent overflow
+            memcpy(outBuffer, buf, len);
+            outBuffer[len] = '\0';  // Null-terminate the string
 
-            // Allocate memory for the packet
-            char* receivedPacket = new char[len + 1]; // +1 for null terminator
-            strcpy(receivedPacket, (char*)buf);
-
-            // Serial.print("Received [");
-            // Serial.print(len);
-            // Serial.print("]: ");
-            // Serial.println(receivedPacket);
+            Serial.print("Received [");
+            Serial.print(len);
+            Serial.print("]: ");
+            Serial.println(outBuffer);
             // Serial.print("RSSI: ");
             // Serial.println(rf69.lastRssi(), DEC);
+            // Serial.print("RSSI (different?): ");
+            // Serial.println(rf69.rssiRead(), DEC);
 
-            if (strstr(receivedPacket, "Hello World")) {
-                // Send a reply!
+            if (strstr(outBuffer, "Hello World")) {
                 uint8_t data[] = "And hello back to you";
                 rf69.send(data, sizeof(data));
                 rf69.waitPacketSent();
                 Serial.println("Sent a reply");
             }
 
-            return receivedPacket; // Caller is responsible for freeing memory
+            return true;  // Packet received and copied
         } else {
             Serial.println("Receive failed");
         }
     }
-    return nullptr; // Return nullptr if no packet is received
+    return false;  // No packet or failed receive
 }
 
+
+int Radio::getRSSI() {
+    return rf69.lastRssi();  // Return RSSI value
+}
+
+// void Radio::readRadio()
+// {
+//    if (rf69.available())
+//   {
+//     // Should be a message for us now   
+//     uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
+//     uint8_t len = sizeof(buf);
+//     if (rf69.recv(buf, &len))
+//     {
+//       Serial.print("got request: ");
+//       Serial.println((char*)buf);
+//       Serial.println(RH_RF69_MAX_MESSAGE_LEN);
+//     }
+//     else
+//     {
+//       Serial.println("recv failed");
+//     }
+//   }
+// }
 
 // void Radio::readRadio()
 // {
