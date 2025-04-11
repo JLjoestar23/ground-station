@@ -4,7 +4,7 @@
 void Radio::init(){
     //init both un-encoded and encoded packet with 0
     std::fill_n(packet, packetSize, 0.0000);
-    // std::fill_n(encodedPacket, packetSize * 4, '0');
+    std::fill_n(encodedPacket, packetSize * 4, '0');
 }
 
 // void Radio::led_test(Led *statusLed){
@@ -99,22 +99,22 @@ void Radio::begin(){
 //     // EAST_serial.begin(Serial8);
 // }
 
-// union Radio::floatunion_t
-// {
-//     float f;
-//     char a[sizeof(float)];
-// } float_ur;
+union Radio::floatunion_t
+{
+    float f;
+    char a[sizeof(float)];
+} float_ur;
 
-// float Radio::decoder(char *encoded)
-// {
-//     // Serial.println("Debug Decoder");
-//     for (int i = 0; i < sizeof(float); i++)
-//     {
-//         float_ur.a[i] = encoded[i];
-//         // Serial.println(encoded[i]);
-//     }
-//     return float_ur.f;
-// }
+float Radio::decoder(char *encoded)
+{
+    // Serial.println("Debug Decoder");
+    for (int i = 0; i < sizeof(float); i++)
+    {
+        float_ur.a[i] = encoded[i];
+        // Serial.println(encoded[i]);
+    }
+    return float_ur.f;
+}
 
 // void Radio::sendingPacket()
 // {
@@ -150,16 +150,16 @@ void Radio::begin(){
 
 //  }
 
-// void Radio::reveicePacket()
-// {
-//     if (rf95.available())
-//     {
-//         readRadio();
-//         decodeData();
-//         printData();
+void Radio::receivePacket()
+{
+    if (rf95.available())
+    {
+        readRadio();
+        decodeData();
+        printData();
         
-//     }
-// }
+    }
+}
 
 void Radio::sendRadio(char *packet){
   
@@ -179,105 +179,86 @@ void Radio::sendRadio(char *packet){
 //    Serial.println("Packet Sent");
 }
 
-bool Radio::readRadio(char* outBuffer, size_t bufferSize) {
+void Radio::readRadio() {
     if (rf95.available()) {
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
         uint8_t len = sizeof(buf);
         
         if (rf95.recv(buf, &len)) {
-            if (len >= bufferSize) len = bufferSize - 1;  // Prevent overflow
-            memcpy(outBuffer, buf, len);
-            outBuffer[len] = '\0';  // Null-terminate the string
-
-            Serial.print("Received [");
-            Serial.print(len);
-            Serial.print("]: ");
-            Serial.println(outBuffer);
-            // Serial.print("RSSI: ");
-            // Serial.println(rf69.lastRssi(), DEC);
-            // Serial.print("RSSI (different?): ");
-            // Serial.println(rf69.rssiRead(), DEC);
-
-            if (strstr(outBuffer, "Hello World")) {
-                uint8_t data[] = "And hello back to you";
-                rf95.send(data, sizeof(data));
-                rf95.waitPacketSent();
-                Serial.println("Sent a reply");
-            }
-
-            return true;  // Packet received and copied
+          Serial.print("Got: ");
+          Serial.println((char *)buf);
+          Serial.print("RSSI: ");
+          Serial.println(rf95.lastRssi(), DEC);
         } else {
             Serial.println("Receive failed");
         }
+        for (int i = 0; i < packetSize * 4; i++)
+        {
+            encodedPacket[i] = (char)buf[i];
+        }
     }
-    return false;  // No packet or failed receive
 }
+
+// bool Radio::readRadio(char* outBuffer, size_t bufferSize) {
+//     if (rf95.available()) {
+//         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+//         uint8_t len = sizeof(buf);
+        
+//         if (rf95.recv(buf, &len)) {
+//             if (len >= bufferSize) len = bufferSize - 1;  // Prevent overflow
+//             memcpy(outBuffer, buf, len);
+//             outBuffer[len] = '\0';  // Null-terminate the string
+
+//             // Serial.print("Received [");
+//             // Serial.print(len);
+//             // Serial.print("]: ");
+//             // Serial.println(outBuffer);
+//             // Serial.print("RSSI: ");
+//             // Serial.println(rf69.lastRssi(), DEC);
+//             // Serial.print("RSSI (different?): ");
+//             // Serial.println(rf69.rssiRead(), DEC);
+
+//             if (strstr(outBuffer, "Hello World")) {
+//                 uint8_t data[] = "And hello back to you";
+//                 rf95.send(data, sizeof(data));
+//                 rf95.waitPacketSent();
+//                 Serial.println("Sent a reply");
+//             }
+
+//             return true;  // Packet received and copied
+//         } else {
+//             Serial.println("Receive failed");
+//         }
+//         for (int i = 0; i < packetSize * 4; i++)
+//         {
+//             encodedPacket[i] = (char)buf[i];
+//         }
+//     }
+//     return false;  // No packet or failed receive
+// }
 
 
 int Radio::getRSSI() {
     return rf95.lastRssi();  // Return RSSI value
 }
 
-// void Radio::readRadio()
-// {
-//    if (rf69.available())
-//   {
-//     // Should be a message for us now   
-//     uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
-//     uint8_t len = sizeof(buf);
-//     if (rf69.recv(buf, &len))
-//     {
-//       Serial.print("got request: ");
-//       Serial.println((char*)buf);
-//       Serial.println(RH_RF69_MAX_MESSAGE_LEN);
-//     }
-//     else
-//     {
-//       Serial.println("recv failed");
-//     }
-//   }
-// }
 
-// void Radio::readRadio()
-// {
-//     // Should be a message for us now
-//     uint8_t serialBuffer[200]; // RH_RF95_MAX_MESSAGE_LEN
-//     uint8_t len = sizeof(serialBuffer);
 
-//     if (rf95.recv(serialBuffer, &len))
-//     {
-//         // RH_RF95::printserialBufferfer("Received: ", serialBuffer, len);
-//         Serial.print("Got: ");
-//         Serial.println((char *)serialBuffer);
-//         Serial.print("RSSI: ");
-//         Serial.println(rf95.lastRssi(), DEC);
-//     }
-//     else
-//     {
-//         Serial.println("Receive failed");
-//     }
-//     for (int i = 0; i < packetSize * 4; i++)
-//     {
-//         //      Serial.println((char)serialBuffer[i]);
-//         encodedPacket[i] = (char)serialBuffer[i];
-//     }
-// }
-
-// void Radio::decodeData()
-// {
-//     if (sizeof(encodedPacket) / sizeof(encodedPacket[0]) == packetSize * sizeof(float))
-//     {
-//         for (int i = 0; i < packetSize; i++)
-//         {
-//             char subencodedPacket[sizeof(float)];
-//             for (int j = 0; j < sizeof(float); j++)
-//             {
-//                 subencodedPacket[j] = encodedPacket[i * sizeof(float) + j];
-//             }
-//             packet[i] = decoder(subencodedPacket);
-//         }
-//     }
-// }
+void Radio::decodeData()
+{
+    if (sizeof(encodedPacket) / sizeof(encodedPacket[0]) == packetSize * sizeof(float))
+    {
+        for (int i = 0; i < packetSize; i++)
+        {
+            char subencodedPacket[sizeof(float)];
+            for (int j = 0; j < sizeof(float); j++)
+            {
+                subencodedPacket[j] = encodedPacket[i * sizeof(float) + j];
+            }
+            packet[i] = decoder(subencodedPacket);
+        }
+    }
+}
 
 void Radio::printData()
 {
@@ -288,3 +269,8 @@ void Radio::printData()
     }
     Serial.println();
 };
+
+float Radio::getValue() {
+  float value = packet[0];
+  return value;
+}

@@ -7,6 +7,7 @@
 
 LedController<1,1> lc;
 
+
 Radio radio;
 char radioPacket[112];
 
@@ -18,7 +19,7 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 // Example radio data (this would be dynamically updated in a real scenario)
-String message = "Nothing Yet";
+int message = 0;
 
 
 // Function to send radio data to all connected WebSocket clients
@@ -97,17 +98,24 @@ void setup() {
 }
 
 void loop() {
-  if (radio.readRadio(radioPacket, sizeof(radioPacket))) {
-      Serial.print("Final received data: ");
-      Serial.println(radioPacket);
-      message = radioPacket;
-      // Notify WebSocket clients with the updated data
-      notifyClients();
-      int RSSI = radio.getRSSI();
-      Serial.print("RSSI: ");
-      Serial.println(RSSI);
-      displayFloat(RSSI);
-  }
+  radio.receivePacket();
+  message = radio.getValue();
+  Serial.print("Message: ");
+  Serial.println(message);
+  notifyClients();
 
-  //delay(1000); // Just a delay to simulate periodic checking
+
+  // if (radio.readRadio(radioPacket, sizeof(radioPacket))) {
+  //     Serial.print("Final received data: ");
+  //     Serial.println(radioPacket);
+  //     message = radioPacket;
+  //     // Notify WebSocket clients with the updated data
+  //     notifyClients();
+  //     int RSSI = radio.getRSSI();
+  //     Serial.print("RSSI: ");
+  //     Serial.println(RSSI);
+  //     displayFloat(RSSI);
+  // }
+
+  delay(1000); // Just a delay to simulate periodic checking
 }

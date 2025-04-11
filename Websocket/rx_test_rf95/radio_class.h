@@ -19,11 +19,10 @@ class Radio {
   private:
     RH_RF95 rf95;
     const static int packetSize = 112;
-    // float packet[packetSize];
-    char packet[packetSize];
-    // char encodedPacket[packetSize*4];
-    // union floatunion_t;
-    // float decoder(char* encoded);
+    float packet[packetSize];
+    char encodedPacket[packetSize*4];
+    union floatunion_t;
+    float decoder(char* encoded);
     // char serialBuffer[packetSize*4];
     // Led *statusLed;
     // bool serial_status;
@@ -41,16 +40,17 @@ class Radio {
     
     void init();  
     void begin(); 
-    void reveicePacket();  
+    void receivePacket();  
     // void led_test(Led *statusLed);
  
     void sendRadio(char *packet);
-    bool readRadio(char* outBuffer, size_t bufferSize);
+    // bool readRadio(char* outBuffer, size_t bufferSize);
    // char* readRadio();
-    //void decodeData();  
+   void readRadio();
+    void decodeData();  
     void printData();
     int getRSSI();
     // void sendingPacket();
     // char readSerial();
-
+    float getValue();
 };

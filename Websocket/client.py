@@ -41,4 +41,4 @@ if __name__ == "__main__":
     connect_websocket()
     while True:
         process_messages()  # Periodically process the messages in the queue
-        #time.sleep(0.1)  # Adjust the sleep time if needed
+        time.sleep(0.1)  # Adjust the sleep time if needed
