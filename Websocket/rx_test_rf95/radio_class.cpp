@@ -156,7 +156,7 @@ void Radio::receivePacket()
     {
         readRadio();
         decodeData();
-        printData();
+        // printData();
         
     }
 }
@@ -239,7 +239,7 @@ void Radio::readRadio() {
 
 
 int Radio::getRSSI() {
-    return rf95.lastRssi();  // Return RSSI value
+    return rf95.lastRSSI();  // Return RSSI value
 }
 
 
@@ -270,7 +270,10 @@ void Radio::printData()
     Serial.println();
 };
 
-float Radio::getValue() {
-  float value = packet[0];
-  return value;
+void Radio::getData(float *dataBuffer) {
+  for (int i = 0; i<28; i++)
+  {
+    dataBuffer[i] = packet[i];
+  }
 }
+

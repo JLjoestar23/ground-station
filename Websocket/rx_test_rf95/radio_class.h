@@ -52,5 +52,5 @@ class Radio {
     int getRSSI();
     // void sendingPacket();
     // char readSerial();
-    float getValue();
+    void getData(float *dataBuffer);
 };

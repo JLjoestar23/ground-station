@@ -10,6 +10,7 @@ LedController<1,1> lc;
 
 Radio radio;
 char radioPacket[112];
+float dataBuffer[28];
 
 const char* ssid = "WS_test";
 
@@ -26,9 +27,36 @@ int message = 0;
 void notifyClients() {
     const uint8_t size = JSON_OBJECT_SIZE(1);
     StaticJsonDocument<size> json;
-    json["message"] = message;
+    json["time"] = dataBuffer[0];
+    json["Accel_X"] = dataBuffer[1];
+    json["Accel_Y"] = dataBuffer[2];
+    json["Accel_Z"] = dataBuffer[3];
+    json["Gyro_X"] = dataBuffer[4];
+    json["Gyro_Y"] = dataBuffer[5];
+    json["Gyro_Z"] = dataBuffer[6];
+    json["Temp"] = dataBuffer[7];
+    json["Euler_X"] = dataBuffer[8];
+    json["Euler_Y"] = dataBuffer[9];
+    json["Euler_Z"] = dataBuffer[10];
+    json["Baro_Alt"] = dataBuffer[11];
+    json["Longitude"] = dataBuffer[12];
+    json["Latitude"] = dataBuffer[13];
+    json["GPS_Alt"] = dataBuffer[14];
+    json["Phase"] = dataBuffer[15];
+    json["Continuity"] = dataBuffer[16];
+    json["Voltage"] = dataBuffer[17];
+    json["Link_Strength"] = dataBuffer[18];
+    json["KF_X"] = dataBuffer[19];
+    json["KF_Y"] = dataBuffer[20];
+    json["KF_Z"] = dataBuffer[21];
+    json["KF_VX"] = dataBuffer[22];
+    json["KF_VY"] = dataBuffer[23];
+    json["KF_VZ"] = dataBuffer[24];
+    json["KF_Drag"] = dataBuffer[25];
+    json["Diagnostic_Message"] = dataBuffer[27];
 
-    char data[28];
+
+    char data[512];
     size_t len = serializeJson(json, data);
     ws.textAll(data, len);
 }
@@ -99,23 +127,26 @@ void setup() {
 
 void loop() {
   radio.receivePacket();
-  message = radio.getValue();
-  Serial.print("Message: ");
-  Serial.println(message);
-  notifyClients();
 
-
+  // float dataBuffer[28];
+  radio.getData(&dataBuffer[0]);
+  for (int i = 0; i<28; i++) {
+    Serial.print(dataBuffer[i]);
+    Serial.print(", ");
+  }
+  Serial.print("\n");
   // if (radio.readRadio(radioPacket, sizeof(radioPacket))) {
   //     Serial.print("Final received data: ");
   //     Serial.println(radioPacket);
   //     message = radioPacket;
   //     // Notify WebSocket clients with the updated data
   //     notifyClients();
-  //     int RSSI = radio.getRSSI();
-  //     Serial.print("RSSI: ");
-  //     Serial.println(RSSI);
-  //     displayFloat(RSSI);
+  int RSSI = radio.getRSSI();
+  Serial.print("RSSI: ");
+  Serial.println(RSSI);
+  displayFloat(RSSI);
   // }
+  notifyClients();
 
-  delay(1000); // Just a delay to simulate periodic checking
+  delay(250); // Just a delay to make sure WS doesn't get overwhelmed
 }
