@@ -239,7 +239,7 @@ void Radio::readRadio() {
 
 
 int Radio::getRSSI() {
-    return rf95.lastRSSI();  // Return RSSI value
+    return rf95.lastRssi();  // Return RSSI value
 }
 
 
