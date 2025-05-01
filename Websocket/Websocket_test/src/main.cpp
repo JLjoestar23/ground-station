@@ -14,7 +14,7 @@ int msg_number = 0;
 
 // Function to send radio data to all connected WebSocket clients
 void notifyClients() {
-  String jsonData = String("{\"Message Number\":") + random() + "}";
+  String jsonData = String("{\"message\":") + random()/10000 + "}";
   ws.textAll(jsonData);
 }
 

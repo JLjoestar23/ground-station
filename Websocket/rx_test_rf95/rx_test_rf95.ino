@@ -27,10 +27,10 @@ int message = 0;
 void notifyClients() {
     const uint8_t size = JSON_OBJECT_SIZE(1);
     StaticJsonDocument<size> json;
-    json["time"] = dataBuffer[0];
-    json["Accel_X"] = dataBuffer[1];
-    json["Accel_Y"] = dataBuffer[2];
-    json["Accel_Z"] = dataBuffer[3];
+    json["time"] = rand();//dataBuffer[0];
+    json["Accel_X"] = rand();//dataBuffer[1];
+    json["Accel_Y"] = rand();//dataBuffer[2];
+    json["Accel_Z"] = rand();//dataBuffer[3];
     json["Gyro_X"] = dataBuffer[4];
     json["Gyro_Y"] = dataBuffer[5];
     json["Gyro_Z"] = dataBuffer[6];
@@ -148,5 +148,5 @@ void loop() {
   // }
   notifyClients();
 
-  delay(250); // Just a delay to make sure WS doesn't get overwhelmed
+  delay(200); // Just a delay to make sure WS doesn't get overwhelmed
 }
