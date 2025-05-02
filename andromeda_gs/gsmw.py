@@ -315,6 +315,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setStretch(6, 20)
         self.verticalLayout_4.addLayout(self.horizontalLayout)
         self.gridLayout = QtWidgets.QGridLayout()
+        self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName("gridLayout")
         self.Plot4 = PlotWidget(parent=self.centralwidget)
         self.Plot4.setObjectName("Plot4")
