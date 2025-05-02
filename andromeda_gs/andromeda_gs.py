@@ -182,9 +182,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
     def setup_plots(self):
         """Configure all plot widgets with proper settings"""
-        color1 = (25,150,207) # Shade of Olin blue
-        color2 = (207, 102, 25) # Orange for contrast
-        color3 = (207, 25, 150) # Magenta for contrast
+        color1 = (25,150,207) # Shade of Olin blue for theme
+        color2 = (207, 102, 25) # Burnt Orange for contrast
+        color3 = (255, 214, 0) # Vibrant Yellow for contrast
 
         self.plot_config = {
             'Plot1': {
@@ -376,7 +376,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # END TEST
 
         # REAL
-        # comment out the test data above and uncomment this to use real data
+        # comment out the test data above and uncomment this to use real data from the webserver
         # Update the plots for acceleration (too lazy to do a for loop)
         # self.update_plots('Plot1', self.plot_data_dict["time"], {"KF_Z": self.plot_data_dict["KF_Z"]})
         # self.update_plots('Plot2', self.plot_data_dict["time"], {"KF_VX": self.plot_data_dict["KF_VX"], "KF_VY": self.plot_data_dict["KF_VY"], "KF_VZ": self.plot_data_dict["KF_VZ"]})
