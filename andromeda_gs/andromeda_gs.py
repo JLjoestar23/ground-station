@@ -293,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.phase_colors = ["77, 86, 88", "0, 148, 255", "0, 103, 192", "173, 216, 230", "0, 168, 150"]
 
         #  Initialize error statuses in the GUI
-        self.errors = [self.ui.IMU_error, self.ui.GPS_error, self.ui.ALT_error]
+        self.errors = [self.ui.IMU_error, self.ui.ALT_error, self.ui.GPS_error]
 
     def fetch_data(self):
         """Fetch new data and update buffers"""
@@ -322,106 +322,105 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Updates every element of the GUI.
         """
-
-        # Update the plots and display elements with the latest data
-        if self.raw_data is None:
-            return
         
         max_points = 50
 
         # TEST
         # Simulated data for testing
-        self.time.append(self.idx)
-        self.Ax.append(np.random.uniform(-10, 10))  
-        self.Ay.append(np.random.uniform(-10, 10))
-        self.Az.append(np.random.uniform(-10, 10))
-        self.Gx.append(np.random.uniform(-10, 10))
-        self.Gy.append(np.random.uniform(-10, 10))
-        self.Gz.append(np.random.uniform(-10, 10))
-        self.Vx.append(np.random.uniform(-10, 10))
-        self.Vy.append(np.random.uniform(-10, 10))
-        self.Vz.append(np.random.uniform(-10, 10))
-        self.KFz.append(np.random.uniform(-10, 10))
-        self.T.append(np.random.uniform(-10, 10))
-        self.Ex.append(np.random.uniform(-10, 10))
-        self.Ey.append(np.random.uniform(-10, 10))
-        self.Ez.append(np.random.uniform(-10, 10))
+        # self.time.append(self.idx)
+        # self.Ax.append(np.random.uniform(-10, 10))  
+        # self.Ay.append(np.random.uniform(-10, 10))
+        # self.Az.append(np.random.uniform(-10, 10))
+        # self.Gx.append(np.random.uniform(-10, 10))
+        # self.Gy.append(np.random.uniform(-10, 10))
+        # self.Gz.append(np.random.uniform(-10, 10))
+        # self.Vx.append(np.random.uniform(-10, 10))
+        # self.Vy.append(np.random.uniform(-10, 10))
+        # self.Vz.append(np.random.uniform(-10, 10))
+        # self.KFz.append(np.random.uniform(-10, 10))
+        # self.T.append(np.random.uniform(-10, 10))
+        # self.Ex.append(np.random.uniform(-10, 10))
+        # self.Ey.append(np.random.uniform(-10, 10))
+        # self.Ez.append(np.random.uniform(-10, 10))
 
-        # Limit the number of points to display in the plot
-        self.time = self.time[-max_points:]
-        self.Ax = self.Ax[-max_points:]
-        self.Ay = self.Ay[-max_points:]
-        self.Az = self.Az[-max_points:]
-        self.Gx = self.Gx[-max_points:]
-        self.Gy = self.Gy[-max_points:]
-        self.Gz = self.Gz[-max_points:]
-        self.Vx = self.Vx[-max_points:]
-        self.Vy = self.Vy[-max_points:]
-        self.Vz = self.Vz[-max_points:]
-        self.KFz = self.KFz[-max_points:]
-        self.T = self.T[-max_points:]
-        self.Ex = self.Ex[-max_points:]
-        self.Ey = self.Ey[-max_points:]
-        self.Ez = self.Ez[-max_points:]
+        # # Limit the number of points to display in the plot
+        # self.time = self.time[-max_points:]
+        # self.Ax = self.Ax[-max_points:]
+        # self.Ay = self.Ay[-max_points:]
+        # self.Az = self.Az[-max_points:]
+        # self.Gx = self.Gx[-max_points:]
+        # self.Gy = self.Gy[-max_points:]
+        # self.Gz = self.Gz[-max_points:]
+        # self.Vx = self.Vx[-max_points:]
+        # self.Vy = self.Vy[-max_points:]
+        # self.Vz = self.Vz[-max_points:]
+        # self.KFz = self.KFz[-max_points:]
+        # self.T = self.T[-max_points:]
+        # self.Ex = self.Ex[-max_points:]
+        # self.Ey = self.Ey[-max_points:]
+        # self.Ez = self.Ez[-max_points:]
 
-        # Update the plots for acceleration (too lazy to do a for loop)
-        self.update_plots('Plot1', self.time[-max_points:], {"KF_Z": self.KFz[-max_points:]})
-        self.update_plots('Plot2', self.time[-max_points:], {"KF_VX": self.Vx[-max_points:], "KF_VY": self.Vy[-max_points:], "KF_VZ": self.Vz[-max_points:]})
-        self.update_plots('Plot3', self.time[-max_points:], {"Euler_X": self.Ex[-max_points:], "Euler_Y": self.Ey[-max_points:], "Euler_Z": self.Ez[-max_points:]})
-        self.update_plots('Plot4', self.time[-max_points:], {"Accel_X": self.Ax[-max_points:], "Accel_Y": self.Ay[-max_points:], "Accel_Z": self.Az[-max_points:]})
-        self.update_plots('Plot5', self.time[-max_points:], {"Gyro_X": self.Gx[-max_points:], "Gyro_Y": self.Gy[-max_points:], "Gyro_Z": self.Gz[-max_points:]})
-        self.update_plots('Plot6', self.time[-max_points:], {"Temp": self.T[-max_points:]})
+        # # Update the plots for acceleration (too lazy to do a for loop)
+        # self.update_plots('Plot1', self.time[-max_points:], {"KF_Z": self.KFz[-max_points:]})
+        # self.update_plots('Plot2', self.time[-max_points:], {"KF_VX": self.Vx[-max_points:], "KF_VY": self.Vy[-max_points:], "KF_VZ": self.Vz[-max_points:]})
+        # self.update_plots('Plot3', self.time[-max_points:], {"Euler_X": self.Ex[-max_points:], "Euler_Y": self.Ey[-max_points:], "Euler_Z": self.Ez[-max_points:]})
+        # self.update_plots('Plot4', self.time[-max_points:], {"Accel_X": self.Ax[-max_points:], "Accel_Y": self.Ay[-max_points:], "Accel_Z": self.Az[-max_points:]})
+        # self.update_plots('Plot5', self.time[-max_points:], {"Gyro_X": self.Gx[-max_points:], "Gyro_Y": self.Gy[-max_points:], "Gyro_Z": self.Gz[-max_points:]})
+        # self.update_plots('Plot6', self.time[-max_points:], {"Temp": self.T[-max_points:]})
 
-        self.idx += 1 # Increment the index for testing
+        # self.idx += 1 # Increment the index for testing
         # END TEST
+
+        # Update the plots and display elements with the latest data
+        if self.raw_data is None:
+            return
 
         # REAL
         # comment out the test data above and uncomment this to use real data from the webserver
         # Update the plots for acceleration (too lazy to do a for loop)
-        # self.update_plots('Plot1', self.plot_data_dict["time"], {"KF_Z": self.plot_data_dict["KF_Z"]})
-        # self.update_plots('Plot2', self.plot_data_dict["time"], {"KF_VX": self.plot_data_dict["KF_VX"], "KF_VY": self.plot_data_dict["KF_VY"], "KF_VZ": self.plot_data_dict["KF_VZ"]})
-        # self.update_plots('Plot3', self.plot_data_dict["time"], {"Euler_X": self.plot_data_dict["Euler_X"], "Euler_Y": self.plot_data_dict["Euler_Y"], "Euler_Z": self.plot_data_dict["Euler_Z"]})
-        # self.update_plots('Plot4', self.plot_data_dict["time"], {"Accel_X": self.plot_data_dict["Accel_X"], "Accel_Y": self.plot_data_dict["Accel_Y"], "Accel_Z": self.plot_data_dict["Accel_Z"]})
-        # self.update_plots('Plot5', self.plot_data_dict["time"], {"Gyro_X": self.plot_data_dict["Gyro_X"], "Gyro_Y": self.plot_data_dict["Gyro_Y"], "Gyro_Z": self.plot_data_dict["Gyro_Z"]})
-        # self.update_plots('Plot6', self.plot_data_dict["time"], {"Temp": self.plot_data_dict["Temp"]})
+        self.update_plots('Plot1', self.plot_data_dict["time"], {"KF_Z": self.plot_data_dict["KF_Z"]})
+        self.update_plots('Plot2', self.plot_data_dict["time"], {"KF_VX": self.plot_data_dict["KF_VX"], "KF_VY": self.plot_data_dict["KF_VY"], "KF_VZ": self.plot_data_dict["KF_VZ"]})
+        self.update_plots('Plot3', self.plot_data_dict["time"], {"Euler_X": self.plot_data_dict["Euler_X"], "Euler_Y": self.plot_data_dict["Euler_Y"], "Euler_Z": self.plot_data_dict["Euler_Z"]})
+        self.update_plots('Plot4', self.plot_data_dict["time"], {"Accel_X": self.plot_data_dict["Accel_X"], "Accel_Y": self.plot_data_dict["Accel_Y"], "Accel_Z": self.plot_data_dict["Accel_Z"]})
+        self.update_plots('Plot5', self.plot_data_dict["time"], {"Gyro_X": self.plot_data_dict["Gyro_X"], "Gyro_Y": self.plot_data_dict["Gyro_Y"], "Gyro_Z": self.plot_data_dict["Gyro_Z"]})
+        self.update_plots('Plot6', self.plot_data_dict["time"], {"Temp": self.plot_data_dict["Temp"]})
         # END REAL
 
         # Update the display elements with the latest data
         if self.raw_data is not None:
             self.ui.lat_val.setText(str(self.raw_data["Latitude"]))
             self.ui.lon_val.setText(str(self.raw_data["Longitude"]))
-            self.ui.alt_val.setText(str(self.raw_data["GPS_Alt"])) # this value can be replaced entirely, probably with drag?
+            #self.ui.alt_val.setText(str(self.raw_data["GPS_Alt"])) # this value can be replaced entirely, probably with drag?
             self.ui.voltage_val.setText(str(self.raw_data["Voltage"]))
             self.ui.RSSI_val.setText(str(self.raw_data["Link_Strength"]))
-            self.ui.diagnostic_message_val.setText(str(self.raw_data["Diagnostic_Message"])) # this needs to be translated into changing an element in the GUI
-            self.ui.continuity_val.setText(str(self.raw_data["Continuity"])) # are these the pyros? need to figure out what data is being sent
+            #self.ui.diagnostic_message_val.setText(str(self.raw_data["Diagnostic_Message"])) # this needs to be translated into changing an element in the GUI
+            #self.ui.continuity_val.setText(str(self.raw_data["Continuity"])) # are these the pyros? need to figure out what data is being sent
             
             # Change the text of the flight phase label to the current phase
-            self.flight_phase.setStyleSheet("QLabel {\n"
-            "    background-color: rgb(" + self.phase_colors[int(self.raw_data["Phase"])-1]  + ");\n"
+            self.ui.flight_phase.setStyleSheet("QLabel {\n"
+            "    background-color: rgb(" + self.phase_colors[int(self.raw_data["Phase"])]  + ");\n"
             "    border-radius: 5px;\n"
             "    padding: 1px;\n"
             "    color: white;\n"
             "}\n"
             "")
+            self.ui.flight_phase.setText(self.phase_labels[int(self.raw_data["Phase"])])
 
             # convert Diagnostic_Message to 8 bit binary
-            bin_diag = bin(int(self.raw_data["Diagnostic_Message"]))
+            bin_diag = format(int(self.raw_data["Diagnostic_Message"]), '08b')
             # remove the first two characters (0b) and convert to a list of bits
-            bin_diag_list = list(bin_diag[2:])
-            
+            bin_diag_list = list(bin_diag)
             # loop through the errors and set the color based on current error status
             for i, error in enumerate(self.errors, start=1):
-                color = "rgb(13,84,142)" if bin_diag_list[-i]=="0" else "rgb(13,84,142)" # default color for all elements
-                if bin_diag_list[-i] == "1": # trigger IMU 
-                    error.setStyleSheet(f"""
-                        QLabel {{
-                            background-color: {color};
-                            border-radius: 5px;
-                            padding: 1px;
-                            color: white;
-                        }}
-                    """)
+                color = "rgb(25,150,207)" if bin_diag_list[-i]=="0" else "rgb(13,84,142)"
+                error.setStyleSheet(f"""
+                    QLabel {{
+                        background-color: {color};
+                        border-radius: 5px;
+                        padding: 1px;
+                        color: white;
+                    }}
+                """)
 
     def closeEvent(self, event):
         '''
@@ -511,7 +510,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         '''
 
         # Clear all recorded data from the plots
-        for config in self.plot_config.items():
+        for plot_name, config in self.plot_config.items():
             # Reset the data in the curves
             for curve in config['curves']:
                 curve.setData([], [])  # Clear the curve data
@@ -530,6 +529,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             'KF_X', 'KF_Y', 'KF_Z', 'KF_VX', 'KF_VY', 'KF_VZ',
             'KF_Drag', 'Diagnostic_Message'
         ])
+
+        self.ui.log_entry.appendPlainText("Data Cleared")
         
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

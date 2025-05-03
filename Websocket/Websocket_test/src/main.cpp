@@ -1,5 +1,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <ArduinoJson.h>
 
 // Replace with your network credentials
 const char* ssid = "WS_server_test";
@@ -11,13 +13,59 @@ AsyncWebSocket ws("/ws");
 
 // Example radio data (this would be dynamically updated in a real scenario)
 int msg_number = 0;
+int phase = 0;
+unsigned long lastPhaseUpdate = 0; // Tracks the last time `phase` was updated
+const unsigned long phaseUpdateInterval = 1000; // Delay in milliseconds (1 second)
 
 // Function to send radio data to all connected WebSocket clients
 void notifyClients() {
-  String jsonData = String("{\"message\":") + random()/10000 + "}";
-  ws.textAll(jsonData);
-}
+  const uint8_t size = JSON_OBJECT_SIZE(1);
+  StaticJsonDocument<size> json;
+  msg_number++;
 
+  // Update `phase` only if the interval has passed
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastPhaseUpdate >= phaseUpdateInterval) {
+    phase++;
+    if (phase > 5) {
+      phase = 1;
+    }
+    lastPhaseUpdate = currentMillis;
+  }
+  //int mock_data = random(0, 100);
+  json["time"] = msg_number;//dataBuffer[0];
+  json["Accel_X"] = random(0, 100);//dataBuffer[1];
+  json["Accel_Y"] = random(0, 100);//dataBuffer[2];
+  json["Accel_Z"] = random(0, 100);//dataBuffer[3];
+  json["Gyro_X"] = random(0, 100);
+  json["Gyro_Y"] = random(0, 100);
+  json["Gyro_Z"] = random(0, 100);
+  json["Temp"] = random(0, 100);
+  json["Euler_X"] = random(0, 100);
+  json["Euler_Y"] = random(0, 100);
+  json["Euler_Z"] = random(0, 100);
+  json["Baro_Alt"] = random(0, 100);
+  json["Longitude"] = random(0, 100);
+  json["Latitude"] = random(0, 100);
+  json["GPS_Alt"] = random(0, 100);
+  json["Phase"] = phase;
+  json["Continuity"] = random(0, 100);
+  json["Voltage"] = random(0, 100);
+  json["Link_Strength"] = random(0, 100);
+  json["KF_X"] = random(0, 100);
+  json["KF_Y"] = random(0, 100);
+  json["KF_Z"] = random(0, 100);
+  json["KF_VX"] = random(0, 100);
+  json["KF_VY"] = random(0, 100);
+  json["KF_VZ"] = random(0, 100);
+  json["KF_Drag"] = random(0, 100);
+  json["Diagnostic_Message"] = pow(2,2); // should trigger GPS error
+
+
+  char data[512];
+  size_t len = serializeJson(json, data);
+  ws.textAll(data, len);
+}
 // WebSocket event handler
 void onWebSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, 
                       AwsEventType type, void *arg, uint8_t *data, size_t len) {
@@ -57,7 +105,6 @@ void loop() {
   delay(100);
   // Simulate radio data updates
   Serial.println(msg_number);
-  msg_number += 1;
 
   // Notify WebSocket clients with the updated data
   notifyClients();
