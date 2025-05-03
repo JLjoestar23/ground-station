@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib as mpl
 from PyQt6 import QtCore, QtWidgets, QtGui
+from PyQt6.QtCore import pyqtSignal
 from gsmw import Ui_MainWindow
 import pyqtgraph as pg
 import receive
@@ -16,6 +17,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """
     Initialize the main window and set up UI elements.
     """
+    new_data_signal = pyqtSignal()
 
     def __init__(self):
         # initializing GUI window
@@ -31,6 +33,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.autosave = 0
         self.autosave_text = ""
         
+        
 
         # setting icons
         self.icon_path = os.path.join(
@@ -41,12 +44,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # setting window name
         self.setWindowTitle("Andromeda Ground Station")
         pg.setConfigOptions(antialias=True)
-
-        self.ui.log_entry.setReadOnly(True)  # Make the log entry read-only
+        
+        # initializing plots and relevant data structures
         self.setup_plots()
         self.initialize_data_structures()
-        
-        
 
         # button color changes when hovering!
         self.ui.connect_toggle.setCursor(
@@ -153,14 +154,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initializing timer object
         self.update_timer = QtCore.QTimer(self)
-        self.update_timer.timeout.connect(self.main_loop) # Update plots every 200 milliseconds
-        self.update_timer.start(200)  # Check every 200 milliseconds 
-        
+        self.update_timer.timeout.connect(self.fetch_data) # Check for data every 100 milliseconds
+        self.update_timer.start(50) # Check every 10 milliseconds 
+        self.new_data_signal.connect(self.main_loop) # Connect the signal to the main loop
+
     # general functions
     def main_loop(self): # need to figure out the exact architecture of this function
         # only fetch data if connected
-        if self.connect == 1:
-            self.fetch_data()
+        #if self.connect == 1:
+        #    self.fetch_data()
         
         # update the plots and display elements
         self.update_display()
@@ -189,14 +191,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plot_config = {
             'Plot1': {
                 'title': 'Altitude',
-                'vars': ['KF_Z'],
-                'colors': [color1],
+                'vars': ['Baro_Alt', 'KF_Y'],
+                'colors': [color1, color2],
                 'unit': 'm'
             },
             'Plot2': {
                 'title': 'Velocity',
-                'vars': ['KF_VX', 'KF_VY', 'KF_VZ'],
-                'colors': [color1, color2, color3],
+                'vars': ['KF_VY'],
+                'colors': [color1],
                 'unit': 'm/s'
             },
             'Plot3': {
@@ -295,12 +297,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #  Initialize error statuses in the GUI
         self.errors = [self.ui.IMU_error, self.ui.ALT_error, self.ui.GPS_error]
 
+        # Initialize variables for data rate calculation
+        self.last_packet_time = 0  # Total bytes received
+        self.data_rate = 0  # Data rate in bytes per second
+
     def fetch_data(self):
         """Fetch new data and update buffers"""
         self.raw_data = receive.get_data()
         #print(self.raw_data)
 
         if self.raw_data is not None and self.collect_data:
+            self.new_data_signal.emit()  # Emit signal to update the display
+
             # Store in DataFrame if data is received
             new_row = pd.DataFrame([self.raw_data])
             self.recorded_data = pd.concat([self.recorded_data, new_row], ignore_index=True)
@@ -309,6 +317,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             for data in self.raw_data.keys():
                 self.plot_data_dict[data].append(self.raw_data[data])
                 self.plot_data_dict[data] = self.plot_data_dict[data][-self.max_points:]
+            
+        # Calculate the time elapsed since the last data rate calculation
+        current_time = time.time()
+        if self.last_packet_time is not None:
+            time_interval = current_time - self.last_packet_time
+            if time_interval > 0:
+                self.data_rate = 1 / time_interval  # Frequency in Hz
+        self.last_packet_time = current_time  # Update the timestamp
 
     def update_plots(self, plot_name, x, y_dict):
         """
@@ -322,89 +338,45 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Updates every element of the GUI.
         """
-        
-        max_points = 50
-
-        # TEST
-        # Simulated data for testing
-        # self.time.append(self.idx)
-        # self.Ax.append(np.random.uniform(-10, 10))  
-        # self.Ay.append(np.random.uniform(-10, 10))
-        # self.Az.append(np.random.uniform(-10, 10))
-        # self.Gx.append(np.random.uniform(-10, 10))
-        # self.Gy.append(np.random.uniform(-10, 10))
-        # self.Gz.append(np.random.uniform(-10, 10))
-        # self.Vx.append(np.random.uniform(-10, 10))
-        # self.Vy.append(np.random.uniform(-10, 10))
-        # self.Vz.append(np.random.uniform(-10, 10))
-        # self.KFz.append(np.random.uniform(-10, 10))
-        # self.T.append(np.random.uniform(-10, 10))
-        # self.Ex.append(np.random.uniform(-10, 10))
-        # self.Ey.append(np.random.uniform(-10, 10))
-        # self.Ez.append(np.random.uniform(-10, 10))
-
-        # # Limit the number of points to display in the plot
-        # self.time = self.time[-max_points:]
-        # self.Ax = self.Ax[-max_points:]
-        # self.Ay = self.Ay[-max_points:]
-        # self.Az = self.Az[-max_points:]
-        # self.Gx = self.Gx[-max_points:]
-        # self.Gy = self.Gy[-max_points:]
-        # self.Gz = self.Gz[-max_points:]
-        # self.Vx = self.Vx[-max_points:]
-        # self.Vy = self.Vy[-max_points:]
-        # self.Vz = self.Vz[-max_points:]
-        # self.KFz = self.KFz[-max_points:]
-        # self.T = self.T[-max_points:]
-        # self.Ex = self.Ex[-max_points:]
-        # self.Ey = self.Ey[-max_points:]
-        # self.Ez = self.Ez[-max_points:]
-
-        # # Update the plots for acceleration (too lazy to do a for loop)
-        # self.update_plots('Plot1', self.time[-max_points:], {"KF_Z": self.KFz[-max_points:]})
-        # self.update_plots('Plot2', self.time[-max_points:], {"KF_VX": self.Vx[-max_points:], "KF_VY": self.Vy[-max_points:], "KF_VZ": self.Vz[-max_points:]})
-        # self.update_plots('Plot3', self.time[-max_points:], {"Euler_X": self.Ex[-max_points:], "Euler_Y": self.Ey[-max_points:], "Euler_Z": self.Ez[-max_points:]})
-        # self.update_plots('Plot4', self.time[-max_points:], {"Accel_X": self.Ax[-max_points:], "Accel_Y": self.Ay[-max_points:], "Accel_Z": self.Az[-max_points:]})
-        # self.update_plots('Plot5', self.time[-max_points:], {"Gyro_X": self.Gx[-max_points:], "Gyro_Y": self.Gy[-max_points:], "Gyro_Z": self.Gz[-max_points:]})
-        # self.update_plots('Plot6', self.time[-max_points:], {"Temp": self.T[-max_points:]})
-
-        # self.idx += 1 # Increment the index for testing
-        # END TEST
 
         # Update the plots and display elements with the latest data
         if self.raw_data is None:
             return
 
-        # REAL
-        # comment out the test data above and uncomment this to use real data from the webserver
         # Update the plots for acceleration (too lazy to do a for loop)
-        self.update_plots('Plot1', self.plot_data_dict["time"], {"KF_Z": self.plot_data_dict["KF_Z"]})
-        self.update_plots('Plot2', self.plot_data_dict["time"], {"KF_VX": self.plot_data_dict["KF_VX"], "KF_VY": self.plot_data_dict["KF_VY"], "KF_VZ": self.plot_data_dict["KF_VZ"]})
+        self.update_plots('Plot1', self.plot_data_dict["time"], {"Baro_Alt": self.plot_data_dict["Baro_Alt"], "KF_Y": self.plot_data_dict["KF_Y"]})
+        self.update_plots('Plot2', self.plot_data_dict["time"], {"KF_VY": self.plot_data_dict["KF_VY"]})
         self.update_plots('Plot3', self.plot_data_dict["time"], {"Euler_X": self.plot_data_dict["Euler_X"], "Euler_Y": self.plot_data_dict["Euler_Y"], "Euler_Z": self.plot_data_dict["Euler_Z"]})
         self.update_plots('Plot4', self.plot_data_dict["time"], {"Accel_X": self.plot_data_dict["Accel_X"], "Accel_Y": self.plot_data_dict["Accel_Y"], "Accel_Z": self.plot_data_dict["Accel_Z"]})
         self.update_plots('Plot5', self.plot_data_dict["time"], {"Gyro_X": self.plot_data_dict["Gyro_X"], "Gyro_Y": self.plot_data_dict["Gyro_Y"], "Gyro_Z": self.plot_data_dict["Gyro_Z"]})
         self.update_plots('Plot6', self.plot_data_dict["time"], {"Temp": self.plot_data_dict["Temp"]})
-        # END REAL
 
         # Update the display elements with the latest data
         if self.raw_data is not None:
+            self.ui.data_rate_val.setText(f"{self.data_rate:.2f} Hz")
             self.ui.lat_val.setText(str(self.raw_data["Latitude"]))
             self.ui.lon_val.setText(str(self.raw_data["Longitude"]))
             #self.ui.alt_val.setText(str(self.raw_data["GPS_Alt"])) # this value can be replaced entirely, probably with drag?
-            self.ui.voltage_val.setText(str(self.raw_data["Voltage"]))
-            self.ui.RSSI_val.setText(str(self.raw_data["Link_Strength"]))
+            self.ui.voltage_val.setText(f"{self.raw_data["Voltage"]}V")
+            self.ui.RSSI_val.setText(f"{self.raw_data["Link_Strength"]}%")
             #self.ui.diagnostic_message_val.setText(str(self.raw_data["Diagnostic_Message"])) # this needs to be translated into changing an element in the GUI
             #self.ui.continuity_val.setText(str(self.raw_data["Continuity"])) # are these the pyros? need to figure out what data is being sent
             
             # Change the text of the flight phase label to the current phase
             self.ui.flight_phase.setStyleSheet("QLabel {\n"
-            "    background-color: rgb(" + self.phase_colors[int(self.raw_data["Phase"])]  + ");\n"
+            "    background-color: rgb(" + self.phase_colors[int(self.raw_data["Phase"])-1]  + ");\n"
             "    border-radius: 5px;\n"
             "    padding: 1px;\n"
             "    color: white;\n"
             "}\n"
             "")
-            self.ui.flight_phase.setText(self.phase_labels[int(self.raw_data["Phase"])])
+            self.ui.flight_phase.setText(self.phase_labels[int(self.raw_data["Phase"])-1])
+
+            # pyros_val = list(str(self.raw_data["Continuity"]))
+            # pyro_display = [int(pyros_val[-2]), int(pyros_val[-3])]
+            # if int(pyros_val[-1]) == 1:
+            #     pyro_status = "Armed"
+            # self.ui.pyros_val.setText(pyro_status + ", " + str(pyro_display))
 
             # convert Diagnostic_Message to 8 bit binary
             bin_diag = format(int(self.raw_data["Diagnostic_Message"]), '08b')
